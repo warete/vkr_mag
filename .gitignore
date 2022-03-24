@@ -137,3 +137,5 @@ data/
 /logs_left_right
 /logs_right_left
 /boxplots
+
+.DS_Store
