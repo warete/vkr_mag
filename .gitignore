@@ -139,3 +139,5 @@ data/
 /boxplots
 
 .DS_Store
+
+/model_checkpoints
