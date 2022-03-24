@@ -45,7 +45,7 @@ def get_datasets_from_file(file_path):
     train_X, train_y = train[:, :18], train[:, 18:]
     test_X, test_y = test[:, :18], test[:, 18:]
 
-    train_dataset = tf.data.Dataset.from_tensor_slices((train_X, train_y)).batch(1000).repeat(100)
-    test_dataset = tf.data.Dataset.from_tensor_slices((test_X, test_y)).batch(1000).repeat(100)
+    train_dataset = tf.data.Dataset.from_tensor_slices((train_X, train_y)).batch(1000).repeat(10)
+    test_dataset = tf.data.Dataset.from_tensor_slices((test_X, test_y)).batch(1000).repeat(10)
 
     return train_dataset, test_dataset
