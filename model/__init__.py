@@ -1,7 +1,8 @@
+from pydoc import source_synopsis
 import numpy as np
 import pandas as pd
-import tensorflow as tf
 from sklearn.preprocessing import StandardScaler
+import tensorflow as tf
 from sklearn.model_selection import train_test_split
 
 class RtmModel(tf.keras.Model):
@@ -30,14 +31,19 @@ class RtmModel(tf.keras.Model):
     def compile(self, learning_rate):
         super().compile(optimizer=tf.keras.optimizers.SGD(learning_rate), loss='MSE')
 
-def get_datasets_from_file(file_path):
+def get_scaler():
+    return StandardScaler()
+
+def get_scaled_data(file_path, scaler):
     df = pd.read_csv(file_path)
     source_values = df.values
 
     #data preprocessing
-    scaler = StandardScaler()
     scaler.fit(source_values)
-    source_values = scaler.transform(source_values)
+    return scaler.transform(source_values), source_values
+
+def get_datasets_from_file(file_path, scaler):
+    source_values = get_scaled_data(file_path, scaler)
 
     #train/test split
     np.random.shuffle(source_values)
