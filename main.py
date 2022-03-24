@@ -23,5 +23,6 @@ for dataset in datasets:
     model.fit(train_dataset, validation_data=test_dataset, epochs=1000)
     end_t = time.time()
     print('Finish time: ', end_t - start_t)
+    model.save(os.path.join('model_checkpoints', dataset['name']))
 
-# model.save(os.path.join('model_checkpoints', 'rtm'))
+#todo: load model
