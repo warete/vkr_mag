@@ -49,3 +49,6 @@ def get_datasets_from_file(file_path):
     test_dataset = tf.data.Dataset.from_tensor_slices((test_X, test_y)).batch(1000).repeat(10)
 
     return train_dataset, test_dataset
+
+def load_model(file):
+    return tf.keras.models.load_model(file)
