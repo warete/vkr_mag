@@ -140,6 +140,7 @@ data/
 
 .DS_Store
 
-/model_checkpoints
+/model_checkpoints*
+/logs_*
 
 .vscode
