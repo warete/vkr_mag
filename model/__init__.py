@@ -43,7 +43,7 @@ def get_scaled_data(file_path, scaler):
     return scaler.transform(source_values), source_values
 
 def get_datasets_from_file(file_path, scaler):
-    source_values = get_scaled_data(file_path, scaler)
+    source_values, _ = get_scaled_data(file_path, scaler)
 
     #train/test split
     np.random.shuffle(source_values)
