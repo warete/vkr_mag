@@ -19,7 +19,7 @@ class RtmModel(tf.keras.Model):
         self.dense1 = tf.keras.layers.Dense(36, activation='sigmoid')
         self.dp2 = tf.keras.layers.Dropout(0.1)
         self.dp3 = tf.keras.layers.Dropout(0.1)
-        self.dense2 = tf.keras.layers.Dense(18)
+        self.dense2 = tf.keras.layers.Dense(18+4)
 
     def call(self, inputs, training):
         x = self.dp1(inputs)
@@ -34,13 +34,19 @@ class RtmModel(tf.keras.Model):
 def get_scaler():
     return StandardScaler()
 
+def get_data_from_file(file_path):
+    return pd.read_csv(file_path)
+
+def scale_data(data, scaler):
+    scaler.fit(data)
+    return scaler.transform(data)
+
 def get_scaled_data(file_path, scaler):
     df = pd.read_csv(file_path)
     source_values = df.values
 
     #data preprocessing
-    scaler.fit(source_values)
-    return scaler.transform(source_values), source_values
+    scale_data(source_values, scaler), source_values
 
 def get_datasets_from_file(file_path, scaler):
     source_values, _ = get_scaled_data(file_path, scaler)

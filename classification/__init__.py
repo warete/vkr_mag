@@ -9,15 +9,19 @@ class Classification():
     methods = {
         'svm': {
             'name': 'SVM',
-            'clf': GridSearchCV(SVC(), {'kernel': ('linear', 'rbf', 'poly', 'sigmoid'), 'C': [1, 10], 'gamma': ('scale', 'auto')}, cv=3),
+            'clf': GridSearchCV(SVC(), {'gamma': ['scale']}, cv=6),
         },
         'knn': {
             'name': 'k-ближайших соседей',
-            'clf': GridSearchCV(neighbors.KNeighborsClassifier(), {'n_neighbors': [3, 5, 7, 8, 10], 'weights': ('uniform', 'distance'), 'algorithm': ('auto', 'ball_tree', 'kd_tree', 'brute')}, cv=3),
+            'clf': GridSearchCV(neighbors.KNeighborsClassifier(),
+                                {'n_neighbors': [3, 5, 7, 8, 10], 'weights': ('uniform', 'distance'),
+                                 'algorithm': ('auto', 'ball_tree', 'kd_tree', 'brute')}, cv=3),
         },
         'decisiontreeclassifier': {
             'name': 'Дерево решений',
-            'clf': GridSearchCV(DecisionTreeClassifier(), {'criterion': ('gini', 'entropy'), 'splitter': ('best', 'random'), 'max_depth': [1, 2, 3, 4, 5]}, cv=3),
+            'clf': GridSearchCV(DecisionTreeClassifier(),
+                                {'criterion': ('gini', 'entropy'), 'splitter': ('best', 'random'),
+                                 'max_depth': [1, 2, 3, 4, 5]}, cv=3),
         },
         'logisticRegression': {
             'name': 'Логистическая регрессия',
