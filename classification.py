@@ -1,17 +1,21 @@
+import math
+
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score
 import pandas as pd
 from os import path
+import util
 
 from classification import Classification
 
-def main() -> None:
-    dataset = pd.read_csv(path.join('data', 'out_all.csv'))
-    X, Y = dataset.drop('class', axis=1), dataset['class']
 
-    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.2, random_state=0)
+def classify_for_dataset(dataset) -> None:
+    X, Y = dataset.drop(['class', 'mw_a_1', 'mw_a_2', 'ir_a_1', 'ir_a_2'], axis=1, errors='ignore'), dataset['class']
 
-    print('shapes: x_train={}, x_test={}, y_train={}, y_test={}'.format(x_train.shape, x_test.shape, y_train.shape, y_test.shape))
+    x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.3, random_state=10)
+
+    print('shapes: x_train={}, x_test={}, y_train={}, y_test={}'.format(x_train.shape, x_test.shape, y_train.shape,
+                                                                        y_test.shape))
 
     clf = Classification()
 
@@ -19,9 +23,33 @@ def main() -> None:
         print('method', method['name'])
         clf.fit_model(method_key, x_train, y_train)
         y_pred = clf.predict_model(method_key, x_test)
-    
-        print(accuracy_score(y_test, y_pred))
-        print(''.join(['-' for _ in range(15)]))
+
+        print('Точность классификации: {}'.format(util.toFixed(accuracy_score(y_test, y_pred), 2)))
+        print('Чувствительность: {}'.format(util.toFixed(util.calculate_sensitivity(y_test, y_pred), 2)))
+        print('Специфичность: {}'.format(util.toFixed(util.calculate_specificity(y_test, y_pred), 2)))
+        print('Эффективность: {}'.format(util.toFixed(
+            math.sqrt(util.calculate_specificity(y_test, y_pred) * util.calculate_specificity(y_test, y_pred)), 2)))
+        print(''.join(['-' for _ in range(75)]))
+    print(''.join(['/' for _ in range(75)]))
+    print(''.join(['-' for _ in range(75)]))
+
+
+def main() -> None:
+    dataset = pd.read_csv(path.join('data', 'out_all.csv'))
+
+    print('Правая + левая МЖ')
+    classify_for_dataset(dataset)
+
+    print('Левая + правая МЖ')
+    classify_for_dataset(dataset.reindex(
+        columns=['t' + str(i) for i in range(18, 36)] + ['t' + str(i) for i in range(18)] + ['class']
+    ))
+
+    print('Только левая МЖ')
+    classify_for_dataset(dataset.drop(['t' + str(i) for i in range(18)], errors='ignore'))
+
+    print('Только правая МЖ')
+    classify_for_dataset(dataset.drop(['t' + str(i) for i in range(18, 36)], errors='ignore'))
 
 
 if __name__ == '__main__':
