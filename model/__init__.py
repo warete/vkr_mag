@@ -16,10 +16,10 @@ class RtmModel(tf.keras.Model):
         self.inputs = tf.keras.layers.Input(name='values18', shape=(18,), dtype='float32')
 
         self.dp1 = tf.keras.layers.Dropout(0.1)
-        self.dense1 = tf.keras.layers.Dense(36, activation='sigmoid')
+        self.dense1 = tf.keras.layers.Dense(40, activation='sigmoid')
         self.dp2 = tf.keras.layers.Dropout(0.1)
         self.dp3 = tf.keras.layers.Dropout(0.1)
-        self.dense2 = tf.keras.layers.Dense(18+4)
+        self.dense2 = tf.keras.layers.Dense(26)
 
     def call(self, inputs, training):
         x = self.dp1(inputs)
@@ -46,7 +46,7 @@ def get_scaled_data(file_path, scaler):
     source_values = df.values
 
     #data preprocessing
-    scale_data(source_values, scaler), source_values
+    return scale_data(source_values, scaler), source_values
 
 def get_datasets_from_file(file_path, scaler):
     source_values, _ = get_scaled_data(file_path, scaler)

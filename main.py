@@ -10,6 +10,8 @@ import shutil
 
 from util import toFixed
 
+pd.options.display.max_columns = 30
+
 datasets = [
     {
         "name": "healthy",
@@ -31,6 +33,7 @@ datasets = [
     },
 ]
 
+
 def fit_datasets(datasets, need_tensorboard: bool):
     """Обучает модели на реальных данных"""
     for k in range(len(datasets)):
@@ -51,25 +54,27 @@ def fit_datasets(datasets, need_tensorboard: bool):
 
         fit_callbacks = []
         if need_tensorboard:
-            logs_dir_name = 'logs_'+model.name
+            logs_dir_name = 'logs_' + model.name
             if os.path.isdir(logs_dir_name):
                 shutil.rmtree(logs_dir_name)
-            
+
             fit_callbacks.append(tf.keras.callbacks.TensorBoard(log_dir=logs_dir_name))
         start_t = time.time()
-        model.fit(train_dataset, validation_data=test_dataset, epochs=dataset['learning_epochs'], callbacks=fit_callbacks)
+        model.fit(train_dataset, validation_data=test_dataset, epochs=dataset['learning_epochs'],
+                  callbacks=fit_callbacks)
         end_t = time.time()
         datasets[k]['time'] = end_t - start_t
         model.save(os.path.join('model_checkpoints', dataset['name']))
 
     for dataset in datasets:
-        print('Finish time', dataset['name'], ':', datasets[k]['time'])
+        print('Finish time', dataset['name'], ':', dataset['time'])
 
 
 def predict_model_data(datasets):
     """Достраивает парную МЖ для модельных данных"""
 
     all_data = None
+    all_data_true_position = None
     for k in range(len(datasets)):
         dataset = datasets[k]
 
@@ -82,7 +87,7 @@ def predict_model_data(datasets):
         scaler18 = get_scaler()
         scaler4 = get_scaler()
 
-        scale_data(file_data.values[:, :4], scaler4)
+        scale_data(file_data.values[:, :8], scaler4)
 
         test_X = scale_data(file_data.values, scaler18)
 
@@ -93,26 +98,44 @@ def predict_model_data(datasets):
         pred_text_X_formatted = []
         for row in pred_test_X_unscaled:
             pred_text_X_formatted.append([toFixed(x, 2) for x in row])
-        
+
         result_rows = np.hstack((file_data.values, pred_text_X_formatted))
-        result_rows_with_class = np.append(result_rows, np.array([[dataset['class']] for _ in range(len(result_rows))]), axis=1)
-        if all_data is None:
-            all_data = result_rows_with_class
+        result_rows_with_class = np.append(result_rows, np.array([[dataset['class']] for _ in range(len(result_rows))]),
+                                           axis=1)
+
+        # 'mw_a_1', 'mw_a_2', 'ir_a_1', 'ir_a_2' => 't40', 't41', 't42', 't43'
+        normal_pos_columns = ['t' + str(key) for key in range(40)] + ['t40', 't41', 't42', 't43'] + ['class']
+        reassign_pos_columns = ['t' + str(i) for i in range(9)] + ['t36'] + ['t' + str(i) for i in range(9, 18)] + [
+            't37'] + ['t' + str(i) for i in range(18, 27)] + ['t38'] + ['t' + str(i) for i in range(27, 36)] + [
+                                   't39'] + ['t40', 't41', 't42', 't43'] + ['class']
+
+        # сначала делаем колонки с правильным порядком
+        pred_df = pd.DataFrame(result_rows_with_class, columns=normal_pos_columns)
+        if all_data_true_position is None:
+            all_data_true_position = pred_df
         else:
-            all_data = np.concatenate([all_data, result_rows_with_class])
-        pred_df = pd.DataFrame(result_rows_with_class, columns=[
-                               't' + str(key) for key in range(36)] + ['mw_a_1', 'mw_a_2', 'ir_a_1', 'ir_a_2'] + ['class'])
+            all_data_true_position = pd.concat([all_data_true_position, pred_df])
+        # потом расставляем десятые точки по молочным железам
+        pred_df = pred_df.reindex(columns=reassign_pos_columns)
+        # и снова выставляем верный порядок
+        pred_df.columns = normal_pos_columns
         predict_result_file = os.path.join(
             'data', 'out_' + dataset['name'] + '.csv')
         pred_df.to_csv(predict_result_file, sep=',',
                        encoding='utf-8', index=False)
         print('Predict data for', dataset['name'], 'saved to', predict_result_file)
-    pred_all_df = pd.DataFrame(all_data, columns=[
-                               't' + str(key) for key in range(36)] + ['mw_a_1', 'mw_a_2', 'ir_a_1', 'ir_a_2'] + ['class'])
+        if all_data is None:
+            all_data = pred_df
+        else:
+            all_data = pd.concat([all_data, pred_df])
     predict_all_result_file = os.path.join(
         'data', 'out_all.csv')
-    pred_all_df.to_csv(predict_all_result_file, sep=',',
-                    encoding='utf-8', index=False)
+    all_data.to_csv(predict_all_result_file, sep=',',
+                       encoding='utf-8', index=False)
+    predict_all_result_true_position_file = os.path.join(
+        'data', 'out_all_true_position.csv')
+    all_data_true_position.to_csv(predict_all_result_true_position_file, sep=',',
+                       encoding='utf-8', index=False)
     print('Predict data all saved to', predict_all_result_file)
     print('finished')
 

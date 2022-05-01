@@ -10,7 +10,7 @@ from classification import Classification
 
 
 def classify_for_dataset(dataset) -> None:
-    X, Y = dataset.drop(['class', 'mw_a_1', 'mw_a_2', 'ir_a_1', 'ir_a_2'], axis=1, errors='ignore'), dataset['class']
+    X, Y = dataset.drop(['class'] + ['t' + str(x) for x in range(36, 44)], axis=1, errors='ignore'), dataset['class']
 
     x_train, x_test, y_train, y_test = train_test_split(X, Y, test_size=0.3, random_state=10)
 
@@ -24,11 +24,11 @@ def classify_for_dataset(dataset) -> None:
         clf.fit_model(method_key, x_train, y_train)
         y_pred = clf.predict_model(method_key, x_test)
 
-        print('Точность классификации: {}'.format(util.toFixed(accuracy_score(y_test, y_pred), 2)))
-        print('Чувствительность: {}'.format(util.toFixed(util.calculate_sensitivity(y_test, y_pred), 2)))
-        print('Специфичность: {}'.format(util.toFixed(util.calculate_specificity(y_test, y_pred), 2)))
+        print('Точность классификации: {}'.format(util.toFixed(accuracy_score(y_test, y_pred), 4)))
+        print('Чувствительность: {}'.format(util.toFixed(util.calculate_sensitivity(y_test, y_pred), 4)))
+        print('Специфичность: {}'.format(util.toFixed(util.calculate_specificity(y_test, y_pred), 4)))
         print('Эффективность: {}'.format(util.toFixed(
-            math.sqrt(util.calculate_specificity(y_test, y_pred) * util.calculate_specificity(y_test, y_pred)), 2)))
+            math.sqrt(util.calculate_specificity(y_test, y_pred) * util.calculate_specificity(y_test, y_pred)), 4)))
         print(''.join(['-' for _ in range(75)]))
     print(''.join(['/' for _ in range(75)]))
     print(''.join(['-' for _ in range(75)]))
@@ -46,10 +46,10 @@ def main() -> None:
     ))
 
     print('Только левая МЖ')
-    classify_for_dataset(dataset.drop(['t' + str(i) for i in range(18)], errors='ignore'))
+    classify_for_dataset(dataset.drop(['t' + str(i) for i in range(18)], axis=1))
 
     print('Только правая МЖ')
-    classify_for_dataset(dataset.drop(['t' + str(i) for i in range(18, 36)], errors='ignore'))
+    classify_for_dataset(dataset.drop(['t' + str(i) for i in range(18, 36)], axis=1))
 
 
 if __name__ == '__main__':
