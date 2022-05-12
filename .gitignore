@@ -130,6 +130,7 @@ dmypy.json
 
 #custom
 data/
+data_old/
 !/**/.gitkeep
 
 /.idea
